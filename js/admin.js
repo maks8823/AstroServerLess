@@ -4,27 +4,35 @@ import {
   collection, addDoc, getDocs, doc, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+// Список почт администраторов
 const ADMIN_EMAILS = [
   "maks88232002@gmail.com",
   "nasakiakio@gmail.com"
 ];
+
+// Функция проверки (без учёта заглавных букв)
+function isAdmin(email) {
+  if (!email) return false;
+  return ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email.toLowerCase());
+}
 
 // Проверка прав ДО активации элементов
 onAuthStateChanged(auth, user => {
   const loadingBlock = document.getElementById("auth-loading");
   const adminContent = document.getElementById("admin-content");
 
-  if (!user || user.email !== ADMIN_EMAIL) {
+  // ИСПРАВЛЕНА ПРОВЕРКА ДЛЯ НЕСКОЛЬКИХ АДМИНОВ
+  if (!user || !isAdmin(user.email)) {
     alert("Доступ запрещён! Страница только для администратора.");
     window.location.href = "index.html";
     return;
   }
 
-  // Если это подтверждённый админ — открываем интерфейс и активируем кнопки
-  loadingBlock.style.display = "none";
-  adminContent.style.display = "block";
+  // Если это подтверждённый админ — открываем интерфейс
+  if (loadingBlock) loadingBlock.style.display = "none";
+  if (adminContent) adminContent.style.display = "block";
 
-  // Настройка кнопки выходу в навигации
+  // Настройка кнопки выхода в навигации
   const navAuth = document.getElementById("nav-auth");
   if (navAuth) {
     navAuth.textContent = `Выйти (${user.email})`;
@@ -33,7 +41,7 @@ onAuthStateChanged(auth, user => {
   }
 
   // Запускаем работу админки
-  initAdminActions();
+  initAdminPanelActions();
 });
 
 function initAdminPanelActions() {
@@ -41,8 +49,8 @@ function initAdminPanelActions() {
 
   // Добавление новости
   document.getElementById("btn-add-news").onclick = async () => {
-    const title = document.getElementById("news-title").value;
-    const text = document.getElementById("news-text").value;
+    const title = document.getElementById("news-title").value.trim();
+    const text = document.getElementById("news-text").value.trim();
     const fileInput = document.getElementById("news-img");
 
     if (!title || !text) {
@@ -68,11 +76,19 @@ function initAdminPanelActions() {
         imageUrl = await fileToBase64(file);
       }
 
+      const now = new Date();
       await addDoc(collection(db, "news"), {
         title,
         text,
         imageUrl,
-        date: new Date().toLocaleDateString("ru-RU")
+        date: now.toLocaleString("ru-RU", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        }),
+        createdAt: now.getTime()
       });
 
       alert("Новость опубликована!");
@@ -86,9 +102,9 @@ function initAdminPanelActions() {
 
   // Создание экскурсии
   document.getElementById("btn-add-ex").onclick = async () => {
-    const name = document.getElementById("ex-name").value;
-    const desc = document.getElementById("ex-desc").value;
-    const date = document.getElementById("ex-date").value;
+    const name = document.getElementById("ex-name").value.trim();
+    const desc = document.getElementById("ex-desc").value.trim();
+    const date = document.getElementById("ex-date").value.trim();
     const price = +document.getElementById("ex-price").value;
     const limit = +document.getElementById("ex-limit").value;
 
@@ -115,6 +131,8 @@ function fileToBase64(file) {
 // Загрузка заявок
 async function loadBookings() {
   const tbody = document.getElementById("bookings-body");
+  if (!tbody) return;
+
   tbody.innerHTML = "<tr><td colspan='4'>Загрузка...</td></tr>";
 
   const snap = await getDocs(collection(db, "bookings"));
@@ -145,13 +163,9 @@ async function loadBookings() {
   });
 }
 
-document.getElementById("bookings-body").addEventListener("click", async (e) => {
+document.getElementById("bookings-body")?.addEventListener("click", async (e) => {
   const btn = e.target.closest("button[data-id]");
   if (!btn) return;
   await updateDoc(doc(db, "bookings", btn.dataset.id), { status: btn.dataset.st });
   loadBookings();
 });
-
-function initAdminActions() {
-  initAdminPanelActions();
-}
