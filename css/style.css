@@ -1,109 +1,96 @@
-import { auth, db } from "./firebase-config.js";
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  collection, getDocs, addDoc, query, where
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-// Укажи здесь свой email администратора
-const ADMIN_EMAIL = "admin@astro.com";
-let currentUser = null;
-
-onAuthStateChanged(auth, u => {
-  currentUser = u;
-  const navAuth = document.getElementById("nav-auth");
-  const navAdmin = document.getElementById("nav-admin");
-
-  if (u) {
-    navAuth.textContent = `Выйти (${u.email})`;
-    navAuth.href = "#";
-    navAuth.onclick = () => signOut(auth).then(() => location.reload());
-    if (u.email === ADMIN_EMAIL && navAdmin) {
-      navAdmin.style.display = "inline";
-    }
-  }
-});
-
-async function loadExcursions() {
-  const list = document.getElementById("exc-list");
-  try {
-    const snap = await getDocs(collection(db, "excursions"));
-    list.innerHTML = "";
-
-    if (snap.empty) {
-      list.innerHTML = "<p>На данный момент нет активных экскурсий.</p>";
-      return;
-    }
-
-    for (const docSnap of snap.docs) {
-      const ex = docSnap.data();
-      
-      const q = query(collection(db, "bookings"), where("excursionId", "==", docSnap.id));
-      const bookedSnap = await getDocs(q);
-      const bookedCount = bookedSnap.size;
-      const spotsLeft = ex.limit - bookedCount;
-
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <h3>${ex.name}</h3>
-        <p style="margin: 8px 0;">${ex.description}</p>
-        <p><strong>Дата:</strong> ${ex.date} | <strong>Стоимость:</strong> ${ex.price} руб.</p>
-        <p><strong>Свободных мест:</strong> ${spotsLeft > 0 ? spotsLeft : 0} из ${ex.limit}</p>
-        <button class="book-btn" data-id="${docSnap.id}" ${spotsLeft <= 0 ? "disabled" : ""}>
-          ${spotsLeft > 0 ? "Подать заявку" : "Мест нет"}
-        </button>
-        <p class="status-msg" style="margin-top: 5px; color: #8ec8f8;"></p>
-      `;
-      list.appendChild(card);
-    }
-  } catch (error) {
-    list.innerHTML = `<p>Ошибка при загрузке: ${error.message}</p>`;
-  }
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #0b0d2a, #161838);
+  color: #e0e0ff;
+  min-height: 100vh;
+  padding-bottom: 2rem;
 }
 
-document.getElementById("exc-list").addEventListener("click", async (e) => {
-  if (!e.target.classList.contains("book-btn")) return;
-  
-  if (!currentUser) {
-    alert("Для записи необходимо войти в систему.");
-    window.location.href = "login.html";
-    return;
-  }
+nav {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem 2rem;
+  display: flex;
+  gap: 1.5rem;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-  const btn = e.target;
-  const excursionId = btn.dataset.id;
-  const statusMsg = btn.nextElementSibling;
+nav a {
+  color: #8ec8f8;
+  text-decoration: none;
+  font-weight: 600;
+}
 
-  btn.disabled = true;
-  statusMsg.textContent = "Обработка запроса...";
+nav a:hover {
+  color: #ffffff;
+}
 
-  try {
-    const dupQuery = query(
-      collection(db, "bookings"),
-      where("excursionId", "==", excursionId),
-      where("userId", "==", currentUser.uid)
-    );
-    const dupSnap = await getDocs(dupQuery);
+.container {
+  max-width: 850px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
 
-    if (!dupSnap.empty) {
-      statusMsg.textContent = "Вы уже подавали заявку на эту экскурсию.";
-      return;
-    }
+h1 { color: #c0ddff; margin-bottom: 1rem; }
+h2 { color: #9ac2ea; margin: 1rem 0; }
 
-    await addDoc(collection(db, "bookings"), {
-      excursionId: excursionId,
-      userId: currentUser.uid,
-      userName: currentUser.email,
-      status: "В ожидании",
-      createdAt: new Date().toISOString()
-    });
+input, textarea {
+  width: 100%;
+  padding: 0.7rem;
+  margin: 0.4rem 0;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.95rem;
+}
 
-    btn.textContent = "Заявка отправлена";
-    statusMsg.textContent = "Статус: На рассмотрении администратором";
-  } catch (err) {
-    btn.disabled = false;
-    statusMsg.textContent = `Ошибка: ${err.message}`;
-  }
-});
+textarea { height: 80px; resize: vertical; }
 
-loadExcursions();
+button {
+  padding: 0.6rem 1.2rem;
+  margin-top: 0.5rem;
+  background-color: #2b5c92;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+button:hover { background-color: #3b7dc7; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-secondary {
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  margin-left: 0.5rem;
+}
+
+.btn-sm { padding: 0.3rem 0.6rem; font-size: 0.85rem; margin: 0 2px; }
+.btn-confirm { background-color: #2e7d32; }
+.btn-cancel { background-color: #c62828; }
+
+.card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+th, td {
+  padding: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+}
+
+th { color: #8ec8f8; font-weight: 600; }
