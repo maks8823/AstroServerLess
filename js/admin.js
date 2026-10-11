@@ -15,7 +15,6 @@ onAuthStateChanged(auth, user => {
   }
 });
 
-// Функция кодирования картинки в текст
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -45,15 +44,12 @@ document.getElementById("btn-add-news").onclick = async () => {
   try {
     if (fileInput.files.length > 0) {
       const file = fileInput.files[0];
-
-      // Ограничение размера до ~1 МБ
-      if (file.size > 1000 * 1024) {
-        alert("Файл слишком большой! Выберите изображение размером до 1 МБ.");
+      if (file.size > 1200 * 1024) {
+        alert("Файл слишком большой! Выберите фото размером до 1 МБ.");
         btn.disabled = false;
         btn.textContent = "Опубликовать";
         return;
       }
-
       imageUrl = await fileToBase64(file);
     }
 

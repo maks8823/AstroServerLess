@@ -9,7 +9,8 @@
   <nav>
     <a href="index.html">Главная</a>
     <a href="excursions.html">Экскурсии</a>
-    <a href="admin.html">Панель управления</a>
+    <a href="login.html" id="nav-auth">Войти</a>
+    <a href="admin.html" id="nav-admin" style="display:none">Панель управления</a>
   </nav>
 
   <div class="container">
@@ -18,14 +19,15 @@
     <section class="card">
       <h2>Добавить экскурсию</h2>
       <input id="ex-name" placeholder="Название программы">
-      <textarea id="ex-desc" placeholder="Краткое описание">
+      <!-- Закрывающий тег </textarea> исправлен -->
+      <textarea id="ex-desc" placeholder="Краткое описание"></textarea>
       <input id="ex-date" placeholder="Дата (например, 25.08.2025)">
       <input id="ex-price" placeholder="Стоимость (руб.)" type="number">
       <input id="ex-limit" placeholder="Лимит участников (чел.)" type="number">
       <button id="btn-add-ex">Создать экскурсию</button>
     </section>
-	
-	    <section class="card">
+
+    <section class="card">
       <h2>Опубликовать новость</h2>
       <input id="news-title" placeholder="Заголовок новости">
       <textarea id="news-text" placeholder="Текст сообщения..."></textarea>
@@ -33,13 +35,6 @@
       <label style="display:block; margin: 8px 0; color: #8ec8f8;">Выберите изображение с ПК:</label>
       <input type="file" id="news-img" accept="image/*">
       
-      <button id="btn-add-news">Опубликовать</button>
-    </section>
-
-    <section class="card">
-      <h2>Опубликовать новость</h2>
-      <input id="news-title" placeholder="Заголовок новости">
-      <textarea id="news-text" placeholder="Текст сообщения..."></textarea>
       <button id="btn-add-news">Опубликовать</button>
     </section>
 
