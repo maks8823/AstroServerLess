@@ -33,17 +33,19 @@
     onAuthStateChanged(auth, user => {
       const navAuth = document.getElementById("nav-auth");
       const navAdmin = document.getElementById("nav-admin");
+      
       if (user) {
         navAuth.textContent = `Выйти (${user.email})`;
         navAuth.href = "#";
         navAuth.onclick = () => signOut(auth).then(() => location.reload());
-        if (user.email === ADMIN_EMAIL) {
+        
+        if (user.email === ADMIN_EMAIL && navAdmin) {
           navAdmin.style.display = "inline";
         }
       }
     });
 
-        async function loadNews() {
+    async function loadNews() {
       const list = document.getElementById("news-list");
       try {
         const q = query(collection(db, "news"), orderBy("date", "desc"));
@@ -56,25 +58,14 @@
         }
 
         snap.forEach(doc => {
+          const d = doc.data();
+          
+          // Обновленные стили картинки: height: auto и display: block (не обрезается)
           const imgHtml = d.imageUrl 
-  ? `<img src="${d.imageUrl}" style="width:100%; height:auto; display:block; border-radius:6px; margin-bottom:12px;">` 
-  : "";
+            ? `<img src="${d.imageUrl}" style="width:100%; height:auto; display:block; border-radius:6px; margin-bottom:12px;" alt="Изображение новости">` 
+            : "";
 
           list.innerHTML += `
             <article class="card">
               ${imgHtml}
-              <h3>${d.title}</h3>
-              <p style="margin: 8px 0;">${d.text}</p>
-              <small style="color: #7eb8e0;">Дата публикации: ${d.date}</small>
-            </article>
-          `;
-        });
-      } catch (e) {
-        list.innerHTML = "<p>Ошибка загрузки новостей.</p>";
-      }
-    }
-
-    loadNews();
-  </script>
-</body>
-</html>
+              
