@@ -28,22 +28,33 @@
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        const ADMIN_EMAILS = [
+    // Список админов
+    const ADMIN_EMAILS = [
       "maks88232002@gmail.com",
       "nasakiakio@gmail.com"
     ];
 
-    onAuthStateChanged(auth, user => {
+    // Проверка без учёта заглавных/строчных букв
+    function isAdmin(email) {
+      if (!email) return false;
+      return ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email.toLowerCase());
+    }
+
+    onAuthStateChanged(auth, (user) => {
       const navAuth = document.getElementById("nav-auth");
       const navAdmin = document.getElementById("nav-admin");
       
       if (user) {
         navAuth.textContent = `Выйти (${user.email})`;
         navAuth.href = "#";
-        navAuth.onclick = () => signOut(auth).then(() => location.reload());
+        navAuth.onclick = (e) => {
+          e.preventDefault();
+          signOut(auth).then(() => location.reload());
+        };
         
-        if (user.email === ADMIN_EMAIL && navAdmin) {
-          navAdmin.style.display = "inline";
+        // Показываем кнопку админа
+        if (isAdmin(user.email) && navAdmin) {
+          navAdmin.style.display = "inline-block";
         }
       }
     });
@@ -60,11 +71,19 @@
         }
 
         const newsList = [];
-        snap.forEach(doc => newsList.push({ id: doc.id, ...doc.data() }));
+        snap.forEach((doc) => newsList.push({ id: doc.id, ...doc.data() }));
 
-        newsList.reverse().forEach(d => {
+        // Новые новости сверху
+        newsList.sort((a, b) => {
+          const ta = a.createdAt || 0;
+          const tb = b.createdAt || 0;
+          if (tb !== ta) return tb - ta;
+          return String(b.date || "").localeCompare(String(a.date || ""), "ru");
+        });
+
+        newsList.forEach((d) => {
           const imgHtml = d.imageUrl 
-            ? `<img src="${d.imageUrl}" style="width:100%; height:auto; display:block; border-radius:6px; margin-bottom:12px;" alt="Изображение">` 
+            ? `<img src="${d.imageUrl}" style="width:100%; height:auto; display:block; border-radius:6px; margin-bottom:12px;" alt="Фото новости">` 
             : "";
 
           list.innerHTML += `
@@ -72,7 +91,7 @@
               ${imgHtml}
               <h3>${d.title || "Без названия"}</h3>
               <p style="margin: 8px 0; white-space: pre-wrap;">${d.text || ""}</p>
-              <small style="color: #7eb8e0;">Дата публикации: ${d.date || "Не указана"}</small>
+              <small style="color: #7eb8e0;">Опубликовано: ${d.date || "—"}</small>
             </article>
           `;
         });
