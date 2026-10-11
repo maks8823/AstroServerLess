@@ -10,16 +10,20 @@
     <a href="index.html">Главная</a>
     <a href="excursions.html">Экскурсии</a>
     <a href="login.html" id="nav-auth">Войти</a>
-    <a href="admin.html" id="nav-admin" style="display:none">Панель управления</a>
   </nav>
 
-  <div class="container">
+  <!-- Сообщение во время проверки прав -->
+  <div class="container" id="auth-loading" style="text-align: center; margin-top: 3rem;">
+    <h2>Проверка прав доступа...</h2>
+  </div>
+
+  <!-- Весь контент админки СНРЫТ по умолчанию (display: none) -->
+  <div class="container" id="admin-content" style="display: none;">
     <h1>Панель администратора</h1>
 
     <section class="card">
       <h2>Добавить экскурсию</h2>
       <input id="ex-name" placeholder="Название программы">
-      <!-- Закрывающий тег </textarea> исправлен -->
       <textarea id="ex-desc" placeholder="Краткое описание"></textarea>
       <input id="ex-date" placeholder="Дата (например, 25.08.2025)">
       <input id="ex-price" placeholder="Стоимость (руб.)" type="number">
