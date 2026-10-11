@@ -94,3 +94,18 @@ th, td {
 }
 
 th { color: #8ec8f8; font-weight: 600; }
+
+.back-link {
+  color: #8ec8f8;
+  text-decoration: none;
+  font-size: 0.95rem;
+  opacity: 0.8;
+  transition: opacity 0.2s, color 0.2s;
+  display: inline-block;
+}
+
+.back-link:hover {
+  opacity: 1;
+  color: #ffffff;
+  text-decoration: underline;
+}
