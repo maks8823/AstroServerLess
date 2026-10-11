@@ -43,7 +43,7 @@
       }
     });
 
-    async function loadNews() {
+        async function loadNews() {
       const list = document.getElementById("news-list");
       try {
         const q = query(collection(db, "news"), orderBy("date", "desc"));
@@ -57,8 +57,13 @@
 
         snap.forEach(doc => {
           const d = doc.data();
+          const imgHtml = d.imageUrl 
+            ? `<img src="${d.imageUrl}" style="width:100%; max-height:350px; object-fit:cover; border-radius:6px; margin-bottom:12px;">` 
+            : "";
+
           list.innerHTML += `
             <article class="card">
+              ${imgHtml}
               <h3>${d.title}</h3>
               <p style="margin: 8px 0;">${d.text}</p>
               <small style="color: #7eb8e0;">Дата публикации: ${d.date}</small>
