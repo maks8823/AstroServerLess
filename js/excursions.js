@@ -4,7 +4,15 @@ import {
   collection, getDocs, addDoc, query, where
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const ADMIN_EMAIL = "maks88232002@gmail.com";
+const ADMIN_EMAILS = [
+  "maks88232002@gmail.com",
+  "nasakiakio@gmail.com"
+];
+
+function isAdmin(email) {
+  return ADMIN_EMAILS.includes(email);
+}
+
 let currentUser = null;
 
 onAuthStateChanged(auth, u => {
@@ -16,7 +24,7 @@ onAuthStateChanged(auth, u => {
     navAuth.textContent = `Выйти (${u.email})`;
     navAuth.href = "#";
     navAuth.onclick = () => signOut(auth).then(() => location.reload());
-    if (u.email === ADMIN_EMAIL && navAdmin) {
+    if (isAdmin(u.email) && navAdmin) {
       navAdmin.style.display = "inline";
     }
   }
@@ -45,7 +53,7 @@ async function loadExcursions() {
       card.className = "card";
       card.innerHTML = `
         <h3>${ex.name}</h3>
-        <p style="margin: 8px 0;">${ex.description}</p>
+        <p style="margin: 8px 0; white-space: pre-wrap;">${ex.description}</p>
         <p><strong>Дата:</strong> ${ex.date} | <strong>Стоимость:</strong> ${ex.price} руб.</p>
         <p><strong>Свободных мест:</strong> ${spotsLeft > 0 ? spotsLeft : 0} из ${ex.limit}</p>
         <button class="book-btn" data-id="${docSnap.id}" ${spotsLeft <= 0 ? "disabled" : ""}>
@@ -60,7 +68,7 @@ async function loadExcursions() {
   }
 }
 
-document.getElementById("exc-list").addEventListener("click", async (e) => {
+document.getElementById("exc-list")?.addEventListener("click", async (e) => {
   if (!e.target.classList.contains("book-btn")) return;
   
   if (!currentUser) {

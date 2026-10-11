@@ -4,7 +4,10 @@ import {
   collection, addDoc, getDocs, doc, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const ADMIN_EMAIL = "maks88232002@gmail.com";
+const ADMIN_EMAILS = [
+  "maks88232002@gmail.com",
+  "nasakiakio@gmail.com"
+];
 
 // Проверка прав ДО активации элементов
 onAuthStateChanged(auth, user => {
